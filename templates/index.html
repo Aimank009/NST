@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Style Transfer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+        }
+        #upload-form {
+            margin-top: 20px;
+            display: inline-block;
+            text-align: left;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #upload-form label {
+            font-weight: bold;
+        }
+        #upload-form input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+        #output {
+            margin-top: 20px;
+        }
+        #output img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .image-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        .image-preview img {
+            max-width: 400px;
+            max-height: 400px;
+            display: block;
+            margin: 10 auto;
+            border-radius: 10px;
+        }
+        .download-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Neural Style Transfer</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <div class="image-preview" id="content-preview">
+            <label for="content">Content Image:</label>
+            <input type="file" id="content" name="content" required>
+            <img id="content-img" src="" alt="Content Image Preview">
+        </div>
+        <div class="image-preview" id="style-preview">
+            <label for="style">Style Image:</label>
+            <input type="file" id="style" name="style" required>
+            <img id="style-img" src="" alt="Style Image Preview">
+        </div>
+        <br>
+        <button type="submit">Transfer Style</button>
+    </form>
+    <div id="output"></div>
+
+    <script>
+        document.getElementById('content').addEventListener('change', function(event) {
+            const contentFile = event.target.files[0];
+            const contentImg = document.getElementById('content-img');
+            contentImg.src = URL.createObjectURL(contentFile);
+        });
+
+        document.getElementById('style').addEventListener('change', function(event) {
+            const styleFile = event.target.files[0];
+            const styleImg = document.getElementById('style-img');
+            styleImg.src = URL.createObjectURL(styleFile);
+        });
+
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('content', document.getElementById('content').files[0]);
+            formData.append('style', document.getElementById('style').files[0]);
+
+            const button = document.querySelector('button');
+            button.disabled = true;
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '<div class="loader"></div>';
+
+            const response = await fetch('/style_transfer', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(blob);
+                outputDiv.innerHTML = '';
+                outputDiv.appendChild(img);
+
+                // Create download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = img.src;
+                downloadLink.download = 'stylized_image.png';
+                downloadLink.textContent = 'Download Image';
+                downloadLink.className = 'download-button';
+                outputDiv.appendChild(downloadLink);
+            } else {
+                outputDiv.innerHTML = '';
+                alert('Failed to stylize image.');
+            }
+
+            button.disabled = false;
+        });
+    </script>
+</body>
+</html>
