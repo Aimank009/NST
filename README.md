@@ -23,7 +23,10 @@ Follow these steps to set up the environment and run the project:
     ```bash
     python main.py
     ```
-
+4. **Paste this url on your browser**:
+    ```bash
+    http://127.0.0.1:5000/
+    ```
 1. **Upload Images**:
     - Upload a style image (e.g., a painting).
     - Upload a content image (e.g., a photograph).
